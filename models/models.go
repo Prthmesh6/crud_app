@@ -8,6 +8,19 @@ const (
 	Cancelled
 )
 
+func (s TaskStatus) String() string {
+	switch s {
+	case Pending:
+		return "Pending"
+	case Done:
+		return "Done"
+	case Cancelled:
+		return "Canceled"
+	default:
+		return "Unknown"
+	}
+}
+
 type Status struct {
 	ID     int32 `json:"id"`
 	Status int   `json:"status"`

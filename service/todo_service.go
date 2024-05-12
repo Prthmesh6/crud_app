@@ -11,12 +11,14 @@ import (
 
 var (
 	ErrInvalidArgument = errors.New("InvalidArguments")
+	ErrTaskNotFound    = errors.New("TaskNotFound")
 )
 
 type TaskService interface {
 	Add(ctx context.Context, task models.Task) (taskId int, err error)
 	Update(ctx context.Context, task models.Task) (err error)
 	GetTasksList(ctx context.Context, orderBy int) (tasks []models.Task, err error)
+	MarkTaskDone(ctx context.Context, taskId int) (err error)
 }
 
 type taskService struct {
@@ -30,7 +32,7 @@ func New(db repository.TaskRepository) TaskService {
 }
 
 func (t *taskService) Add(ctx context.Context, task models.Task) (taskId int, err error) {
-	if task.Name == "" || task.Priority < 0 {
+	if task.Name == "" || task.Priority <= 0 {
 		err = ErrInvalidArgument
 		return
 	}
@@ -52,7 +54,14 @@ func (t *taskService) GetTasksList(ctx context.Context, orderBy int) (tasks []mo
 	//currently not using hardcoding this limit & offset
 	// we can take this from api
 	tasks, err = t.db.GetTasksList(ctx, 100, 0)
+	if err != nil {
+		return nil, err
+	}
 
+	if len(tasks) == 0 {
+		err = ErrTaskNotFound
+		return
+	}
 	//Also this logic we can keep in db layer, we will do order by as per sorting request
 	if orderBy == 1 {
 		sort.Slice(tasks, func(i, j int) bool {
