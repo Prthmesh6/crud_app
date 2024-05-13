@@ -79,6 +79,7 @@ func (t *taskService) MarkTaskDone(ctx context.Context, taskId int) (err error) 
 	if taskId < 0 {
 		return ErrInvalidArgument
 	}
+	//also check if task is present, if not present return ErrTaskNotFound
 	err = t.db.Update(ctx, models.Task{ID: int64(taskId), Status: int(models.Done)})
 	return
 }
